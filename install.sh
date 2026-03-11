@@ -84,8 +84,16 @@ systemctl enable nft-apply.service
 
 # === Cron @reboot (as requested) ===
 echo "[*] Adding cron @reboot entry for nft-apply.sh..."
+existing="$(crontab -l 2>/dev/null || true)"
 # Add to root's crontab
-( crontab -l 2>/dev/null | grep -v 'nft-apply.sh' ; echo '@reboot /usr/local/bin/nft-apply.sh >/var/log/nft-apply.log 2>&1' ) | crontab -
+
+printf "%s\n%s\n" \
+  "$(printf "%s\n" "$existing" | grep -v '/usr/local/bin/nft-apply\.sh' || true)" \
+  "@reboot /usr/local/bin/nft-apply.sh >/var/log/nft-apply.log 2>&1" \
+  | crontab -
+echo "[✓] Cron updated."
+
+#( crontab -l 2>/dev/null | grep -v 'nft-apply.sh' ; echo '@reboot /usr/local/bin/nft-apply.sh >/var/log/nft-apply.log 2>&1' ) | crontab -
 
 echo
 echo "[✓] Installation complete."
