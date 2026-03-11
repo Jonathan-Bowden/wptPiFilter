@@ -4,6 +4,7 @@ set -euo pipefail
 # === Config (override via env or edit here) ===
 : "${APP_DIR:=$(pwd)}"
 : "${WLAN_IFACE:=wlan0}"
+: "${ETH_IFACE:=eth0}"
 : "${SSID:=VMC-WXCVR}"
 : "${WIFI_PSK:=vehicle1}"
 : "${TPROXY_PORT:=19001}"
@@ -53,6 +54,7 @@ install -m 0755 scripts/wifi-hotspot.sh /usr/local/bin/wifi-hotspot.sh
 echo "[*] Writing /etc/default/vmc-wxcvr ..."
 cat >/etc/default/vmc-wxcvr <<EOF
 WLAN_IFACE="${WLAN_IFACE}"
+ETH_IFACE="${ETH_IFACE}"
 SSID="${SSID}"
 WIFI_PSK="${WIFI_PSK}"
 TPROXY_PORT="${TPROXY_PORT}"
