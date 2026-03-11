@@ -1,0 +1,12 @@
+[Unit]
+Description=Apply nftables TPROXY rules for VMC-WXCVR
+After=network-online.target NetworkManager.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/nft-apply.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

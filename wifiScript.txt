@@ -7,6 +7,6 @@ sudo nmcli con modify Hotspot 802-11-wireless-security.pairwise ccmp
 sudo nmcli con modify Hotspot 802-11-wireless-security.psk vehicle1
 sudo nmcli con modify Hotspot 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
 sudo nmcli con up Hotspot
-sudn nft delete table ip nm-shared-wlan0
+sudo nft delete table ip nm-shared-wlan0
 
 sudo nmcli con modify wlan0 ipv4.method shared
