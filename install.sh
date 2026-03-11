@@ -35,9 +35,9 @@ cd "$APP_DIR"
 python3 -m venv "$VENV_DIR"
 # shellcheck disable=SC1090
 source "${VENV_DIR}/bin/activate"
-pip3 install --user NetfilterQueue scapy
+pip install --upgrade pip
+pip3 install --no-cache-dir NetfilterQueue scapy
 if [[ -f requirements.txt ]]; then
-  pip install --upgrade pip
   pip install -r requirements.txt
 else
   echo "No requirements.txt found, skipping pip install."
