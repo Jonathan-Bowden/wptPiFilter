@@ -21,9 +21,9 @@ fi
 echo "[*] Installing required packages..."
 apt-get update -y
 apt-get install -y python3 python3-venv python3-pip nftables network-manager cron
-sudo apt install -y libnetfilter-queue-dev python3-pip
+apt-get install -y libnetfilter-queue-dev python3-pip
 pip3 install --user NetfilterQueue scapy
-sudo apt-get install -y hostapd dnsmasq nftables tcpdump wireshark-cli
+apt-get install -y hostapd dnsmasq nftables tcpdump wireshark-cli
 
 if ! command -v nmcli >/dev/null 2>&1; then
   echo "nmcli (NetworkManager) not found. Please ensure NetworkManager is installed/enabled."
