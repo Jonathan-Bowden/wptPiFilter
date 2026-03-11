@@ -22,7 +22,6 @@ echo "[*] Installing required packages..."
 apt-get update -y
 apt-get install -y python3 python3-venv python3-pip nftables network-manager cron
 apt-get install -y libnetfilter-queue-dev python3-pip
-pip3 install --user NetfilterQueue scapy
 apt-get install -y hostapd dnsmasq nftables tcpdump wireshark-cli
 
 if ! command -v nmcli >/dev/null 2>&1; then
@@ -36,6 +35,7 @@ cd "$APP_DIR"
 python3 -m venv "$VENV_DIR"
 # shellcheck disable=SC1090
 source "${VENV_DIR}/bin/activate"
+pip3 install --user NetfilterQueue scapy
 if [[ -f requirements.txt ]]; then
   pip install --upgrade pip
   pip install -r requirements.txt
