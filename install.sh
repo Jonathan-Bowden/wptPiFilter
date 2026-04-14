@@ -7,11 +7,17 @@ set -euo pipefail
 : "${ETH_IFACE:=eth0}"
 : "${SSID:=VMC-WXCVR}"
 : "${WIFI_PSK:=vehicle1}"
+: "${CONNECTION_NAME:=VMC-WXCVR}"
 : "${TPROXY_PORT:=19001}"
 : "${MARK:=0x1}"
 : "${UDP1:=24680}"
 : "${UDP2:=24681}"
 : "${VENV_DIR:=.venv}"
+: "${WLAN_IFACE2:=wlan1}"
+: "${SSID2:=VMC-RALINK}"
+: "${WIFI_PSK2:=vehicle2}"
+: "${CONNECTION_NAME2:=VMC-RALINK}"
+: "${SERIALNUM=21}"
 
 # === Checks & deps ===
 if [[ $EUID -ne 0 ]]; then
@@ -53,23 +59,30 @@ install -m 0755 scripts/wifi-hotspot.sh /usr/local/bin/wifi-hotspot.sh
 # Write a config file used by scripts
 echo "[*] Writing /etc/default/vmc-wxcvr ..."
 cat >/etc/default/vmc-wxcvr <<EOF
+[AP]
 WLAN_IFACE="${WLAN_IFACE}"
 ETH_IFACE="${ETH_IFACE}"
 SSID="${SSID}"
 WIFI_PSK="${WIFI_PSK}"
+CONNECTION_NAME="${VMC-WXCVR}"
 TPROXY_PORT="${TPROXY_PORT}"
 MARK="${MARK}"
 UDP1="${UDP1}"
 UDP2="${UDP2}"
 APP_DIR="${APP_DIR}"
 VENV_DIR="${VENV_DIR}"
+WLAN_IFACE2="${WLAN_IFACE2}"
+SSID2="${SSID2}"
+WIFI_PSK2="${WIFI_PSK2}"
+CONNECTION_NAME2="${VMC-RALINK}"
+SERIALNUM="${SERIALNUM}"
 EOF
 chmod 0644 /etc/default/vmc-wxcvr
 
 # === Enable IP forwarding persistently ===
 echo "[*] Enabling IP forwarding persistently..."
 cat >/etc/sysctl.d/99-vmc-wxcvr.conf <<EOF
-net.ipv4.ip_forward=1
+net.ipv4.ip_forward=0
 EOF
 sysctl --system >/dev/null
 

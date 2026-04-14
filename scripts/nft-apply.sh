@@ -13,7 +13,7 @@ fi
 log() { echo "[nft-apply] $*"; }
 
 # Make ip_forward sure at runtime (persistent is handled by sysctl.d)
-sysctl -w net.ipv4.ip_forward=1 >/dev/null
+sysctl -w net.ipv4.ip_forward=0 >/dev/null
 
 # Ensure policy routing for tproxy marked packets exists
 RULE="from all fwmark ${MARK} lookup 100"
@@ -56,10 +56,17 @@ nft add rule ${TABLE} divert meta l4proto udp socket transparent 1 meta mark set
 
 # UDP dst 24680 on WLAN_IFACE -> tproxy to local :TPROXY_PORT
 nft add rule ${TABLE} preroute iifname "${WLAN_IFACE}" udp dport ${UDP1} tproxy to :${TPROXY_PORT} meta mark set ${MARK} accept
+nft add rule ${TABLE} preroute iifname "${WLAN_IFACE2}" udp dport ${UDP1} tproxy to :${TPROXY_PORT} meta mark set ${MARK} accept
 
 # UDP src/dst 24681 on WLAN_IFACE -> tproxy to local :TPROXY_PORT
 nft add rule ${TABLE} preroute iifname "${WLAN_IFACE}" udp sport ${UDP2} tproxy ip to :${TPROXY_PORT} meta mark set ${MARK} accept
 nft add rule ${TABLE} preroute iifname "${WLAN_IFACE}" udp dport ${UDP2} tproxy ip to :${TPROXY_PORT} meta mark set ${MARK} accept
+nft add rule ${TABLE} preroute iifname "${WLAN_IFACE2}" udp sport ${UDP2} tproxy ip to :${TPROXY_PORT} meta mark set ${MARK} accept
+nft add rule ${TABLE} preroute iifname "${WLAN_IFACE2}" udp dport ${UDP2} tproxy ip to :${TPROXY_PORT} meta mark set ${MARK} accept
+
+# REVERSE (eth0 -> hotspot)
+nft add rule ${TABLE} preroute iifname ${ETH_IFACE} ip daddr 10.42.0.0/24 udp dport ${UDP1} tproxy ip to :19001 meta mark set 0x1 accept
+nft add rule ${TABLE} preroute iifname ${ETH_IFACE} ip daddr 10.42.1.0/24 udp dport ${UDP1} tproxy ip to :19001 meta mark set 0x1 accept
 
 # Bypass (order matters)
 nft add rule ${TABLE} preroute fib daddr type local return
@@ -67,11 +74,10 @@ nft add rule ${TABLE} preroute udp sport 19001 return
 nft add rule ${TABLE} preroute meta mark 0x66 return
 nft add rule ${TABLE} preroute meta mark 0x77 return
 
-# REVERSE (eth0 -> hotspot)
-nft add rule ${TABLE} preroute iifname ${ETH_IFACE} ip daddr 10.42.0.0/24 udp dport ${UDP1} tproxy ip to :19001 meta mark set 0x1 accept
-
 # Remove NetworkManager's nm-shared table if present (harmless if not)
 nft delete table ip nm-shared-${WLAN_IFACE} 2>/dev/null || true
 nft delete table ip nm-shared-wlan0 2>/dev/null || true
+nft delete table ip nm-shared-${WLAN_IFACE2} 2>/dev/null || true
+nft delete table ip nm-shared-wlan1 2>/dev/null || true
 
 log "Done."
