@@ -13,7 +13,7 @@ from datetime import datetime
 import VMCPacket
 VMCPacket = importlib.reload(VMCPacket)
 
-MAX_PER_IP = 4
+MAX_PER_IP = 2
 
 LISTEN_PORT = 19001
 
@@ -44,10 +44,48 @@ IP_TRANSPARENT     = 19
 IP_RECVORIGDSTADDR = 20
 IP_ORIGDSTADDR     = 20
 
-config = configparser.ConfigParser()
+def load_env_file(path="/etc/default/vmc-wxcvr"):
+    cfg = {}
+
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            if "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            cfg[key.strip()] = value.strip()
+
+    return cfg
+
+"""config = configparser.ConfigParser()
 config.read('/etc/default/vmc-wxcvr')
 serialnum = config.getint('AP', 'SERIALNUM')
-print(serialnum)
+print(serialnum)"""
+
+cfg = load_env_file()
+
+BATCH_DEST_IP   = cfg["ETH_BATCH"]
+DAQSERVER_IP    = cfg["ETH_ADDR"]
+ETH0_BROADCAST_IP   = cfg["ETH_ADDR"]
+
+iface = []
+ssid = []
+subnet = []
+for i in range(int(cfg["AP_COUNT"])):
+    subnet[i] = ipaddress.ip_network(cfg[f"AP_{i}_SUBNET"])
+    iface[i] = cfg[f"AP_{i}_WLAN_IFACE"]
+    ssid[i]  = cfg[f"AP_{i}_SSID"]
+
+
+WLAN_IFACE = cfg["WLAN_IFACE"]
+#UDP2 = int(cfg["UDP2"])
+#MARK = int(cfg["MARK"], 0)
+SERIALNUM = int(cfg["SERIALNUM"])
+
 
 def now():
     return datetime.now().strftime('%H:%M:%S.%f')[:-3]
@@ -185,9 +223,12 @@ def build_single_aggregate_frame():
     
     parts.append(b"VMC")                    # 3 bytes ASCII
     parts.append(b"\x02")                   # 1 byte flags (2 = from AP to PC)
-    parts.append(serialnum.to_bytes(2, 'big'))			# 2 bytes AP serial number
+    parts.append(SERIALNUM.to_bytes(2, 'big'))			# 2 bytes AP serial number
     
     parts.append(ap_buffer_packet_num.to_bytes(2, 'big'))#.append(ap_buffer_packet_num)#(2, byteorder='big'))#append(ap_buffer_packet_num)      # 2 bytes AP packet number
+    byte_array_64 = struct.pack('<d', time.time())
+    parts.append(byte_array_64)
+    #parts.append(now())
 
     for src_ip in sources:
         dq = latest_24681_by_ip[src_ip]
@@ -360,15 +401,20 @@ def main():
                     continue
                 dst_ip, dst_port = dst
 
-                src_in_hotspot = ipaddress.ip_address(src_ip) in HOTSPOT_NET or ipaddress.ip_address(src_ip) in HOTSPOT_NET2
-                dst_in_hotspot = ipaddress.ip_address(dst_ip) in HOTSPOT_NET or ipaddress.ip_address(dst_ip) in HOTSPOT_NET2
+                #src_in_hotspot = ipaddress.ip_address(src_ip) in HOTSPOT_NET or ipaddress.ip_address(src_ip) in HOTSPOT_NET2
+                #dst_in_hotspot = ipaddress.ip_address(dst_ip) in HOTSPOT_NET or ipaddress.ip_address(dst_ip) in HOTSPOT_NET2
+                src_in_hotspot = False
+                dst_in_hotspot = False
+                for i in subnet:
+                    src_in_hotspot = ipaddress.ip_address(src_ip) in subnet[i] or src_in_hotspot
+                    dst_in_hotspot = ipaddress.ip_address(dst_ip) in subnet[i] or dst_in_hotspot
 
                 # -------------- 24681: BUFFERED (hotspot -> eth0) --------------
                 if src_in_hotspot and (src_port == PORT_B or dst_port == PORT_B):
                     #print(f"{now()}  sendto {src_ip}:{src_port} -> {dst_ip}:{dst_port}", flush=True)
                     if hb_ok() and not require_restart:
+                        pkt = VMCPacket.VMCPacket.from_bytes(data, endpoint=(dst_ip_send, PORT_B))
                         if src_ip == logged_ip:
-                            pkt = VMCPacket.VMCPacket.from_bytes(data, endpoint=(dst_ip_send, PORT_B))
                             if pkt.packet_id - last_packet_num > 1:
                                 gap = pkt.packet_id - last_packet_num - 1
                                 logging.info(
