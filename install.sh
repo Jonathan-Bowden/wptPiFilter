@@ -3,34 +3,8 @@ set -euo pipefail
 
 # === Config (override via env or edit here) ===
 : "${APP_DIR:=$(pwd)}"
-#: "${WLAN_IFACE:=wlan0}"
-#: "${ETH_IFACE:=eth0}"
-#: "${SSID:=VMC-WXCVR}"
-#: "${WIFI_PSK:=vehicle1}"
-#: "${CONNECTION_NAME:=VMC-WXCVR}"
-#: "${WLAN2_IP:=10.24.0.0}"
-#: "${TPROXY_PORT:=19001}"
-#: "${MARK:=0x1}"
-#: "${UDP1:=24680}"
-#: "${UDP2:=24681}"
-#: "${VENV_DIR:=.venv}"
-#: "${WLAN_IFACE2:=wlan1}"
-#: "${SSID2:=VMC-RALINK}"
-#: "${WIFI_PSK2:=vehicle2}"
-#: "${CONNECTION_NAME2:=VMC-RALINK}"
-#: "${WLAN1_IP:=10.24.1.0}"
-#: "${SERIALNUM=21}"
-#: "${ETH_ADDR:=192.168.1.255}"
-
 
 source install.cfg
-
-
-#for i in $(seq 0 $((AP_COUNT-1))); do
-#  eval iface="\$AP_${i}_WLAN_IFACE"
-#  eval ssid="\$AP_${i}_SSID"
-#done
-
 
 # === Checks & deps ===
 if [[ $EUID -ne 0 ]]; then
@@ -107,56 +81,6 @@ echo "[*] Writing /etc/default/vmc-wxcvr ..."
 } >/etc/default/vmc-wxcvr
 
 chmod 0644 /etc/default/vmc-wxcvr
-## Write a config file used by scripts
-#echo "[*] Writing /etc/default/vmc-wxcvr ..."
-#cat >/etc/default/vmc-wxcvr <<EOF
-#WLAN_IFACE="${WLAN_IFACE}"
-#ETH_IFACE="${ETH_IFACE}"
-#SSID="${SSID}"
-#WIFI_PSK="${WIFI_PSK}"
-#CONNECTION_NAME="${CONNECTION_NAME}"
-#WLAN2_IP="${WLAN2_IP}"
-#TPROXY_PORT="${TPROXY_PORT}"
-#MARK="${MARK}"
-#UDP1="${UDP1}"
-#UDP2="${UDP2}"
-#APP_DIR="${APP_DIR}"
-#VENV_DIR="${VENV_DIR}"
-#WLAN_IFACE2="${WLAN_IFACE2}"
-#SSID2="${SSID2}"
-#WIFI_PSK2="${WIFI_PSK2}"
-#CONNECTION_NAME2="${VCONNECTION_NAME2}"
-#SERIALNUM=${SERIALNUM}
-#WLAN1_IP="${WLAN1_IP}"
-#ETH_ADDR="${ETH_ADDR}"
-#EOF
-#chmod 0644 /etc/default/vmc-wxcvr
-#echo "[*] Writing /etc/default/vmc-wxcvr ..."
-#cat >/etc/default/vmc-wxcvr <<EOF
-#AP_COUNT=2
-#
-#AP_0_WLAN_IFACE=${WLAN_IFACE}
-#AP_0_SSID=${SSID}
-#AP_0_WIFI_PSK=${WIFI_PSK}
-#AP_0_CONNECTION_NAME=${CONNECTION_NAME}
-#AP_0_SUBNET=${WLAN2_IP}
-#
-#AP_1_WLAN_IFACE=${WLAN_IFACE2}
-#AP_1_SSID=${SSID2}
-#AP_1_WIFI_PSK=${WIFI_PSK2}
-#AP_1_CONNECTION_NAME=${CONNECTION_NAME2}
-#AP_1_SUBNET=${WLAN1_IP}
-#
-#TPROXY_PORT=${TPROXY_PORT}
-#UDP1=${UDP1}
-#UDP2=${UDP2}
-#MARK=${MARK}
-#ETH_ADDR=${ETH_ADDR}
-#ETH_IFACE=${ETH_IFACE}
-#SERIALNUM=${SERIALNUM}
-#
-#EOF
-#chmod 0644 /etc/default/vmc-wxcvr
 
 # === Enable IP forwarding persistently ===
 echo "[*] Enabling IP forwarding persistently..."

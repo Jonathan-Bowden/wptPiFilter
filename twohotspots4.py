@@ -81,7 +81,7 @@ for i in range(int(cfg["AP_COUNT"])):
     ssid[i]  = cfg[f"AP_{i}_SSID"]
 
 
-WLAN_IFACE = cfg["WLAN_IFACE"]
+#WLAN_IFACE = cfg["WLAN_IFACE"]
 #UDP2 = int(cfg["UDP2"])
 #MARK = int(cfg["MARK"], 0)
 SERIALNUM = int(cfg["SERIALNUM"])
@@ -401,11 +401,9 @@ def main():
                     continue
                 dst_ip, dst_port = dst
 
-                #src_in_hotspot = ipaddress.ip_address(src_ip) in HOTSPOT_NET or ipaddress.ip_address(src_ip) in HOTSPOT_NET2
-                #dst_in_hotspot = ipaddress.ip_address(dst_ip) in HOTSPOT_NET or ipaddress.ip_address(dst_ip) in HOTSPOT_NET2
                 src_in_hotspot = False
                 dst_in_hotspot = False
-                for i in subnet:
+                for i in range(len(subnet)):
                     src_in_hotspot = ipaddress.ip_address(src_ip) in subnet[i] or src_in_hotspot
                     dst_in_hotspot = ipaddress.ip_address(dst_ip) in subnet[i] or dst_in_hotspot
 
